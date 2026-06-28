@@ -60,7 +60,7 @@ export function create(type: number, health: number, damage: number, speed: numb
 
 export function read(_id: any, data: string) {
     const json = JSON.parse(data);
-    return create(json.type, json.health, json.damage, json.speed, json.name, json.sight || 2, json.range || 1, json.loot || null);
+    return create(json.type, json.health, json.damage, json.speed, json.name, json.sight ?? 2, json.range ?? 1, json.loot ?? null);
 }
 
 // Loads all enemies from the ./enemies/ folder

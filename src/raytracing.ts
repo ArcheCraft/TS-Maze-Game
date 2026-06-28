@@ -54,7 +54,7 @@ export class Storage {
 
 // Creates a vision map for the given world, sight range and center
 export function createVisionMap(world: World, sight: number, center: Position) {
-    let storage = new Storage(world.maze.size, sight + 1, center);
+    const storage = new Storage(world.maze.size, sight + 1, center);
 
     scanArc(storage, world, 0, -1, 1, (x, y) => [x, y]);
     scanArc(storage, world, 0, -1, 1, (x, y) => [y, -x]);

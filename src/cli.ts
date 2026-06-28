@@ -1,10 +1,9 @@
 import { print, println, rotate, clear, clamp, storage } from "./utils.ts";
 import * as mazes from "./maze.ts";
-import chalk from "chalk";
+import chalk, { ChalkInstance } from "chalk";
 import { template } from "chalk-template";
 import * as readline from "readline-sync";
-import * as worlds from "./world.ts";
-import { World } from "./world.ts";
+import { World, EntityType } from "./world.ts";
 
 export const MenuCommand = {
     start: 0,
@@ -20,13 +19,13 @@ export function start() {
 
 // Menu function:
 // - Prints the menu
-// - Calls the callbacck on user commands
+// - Calls the callback on user commands
 // - Returns any data the callback returned
 export function menu<T>(callback: (cmd: MenuCommand) => (any & { cont: true }) | (T & { cont: false })): T {
     let cont: T & { cont: boolean };
     do {
         const selected = selection(3, function(index) {
-            let width = 50;
+            const width = 50;
             println("-".repeat(width));
             println(chalk.green(" ".repeat((width - 10) / 2) + " MAIN MENU" + " ".repeat((width - 10) / 2)));
             println()
@@ -35,7 +34,7 @@ export function menu<T>(callback: (cmd: MenuCommand) => (any & { cont: true }) |
 
             function printCommand(cmd: string) {
                 let line = "";
-                let selected = idx == index;
+                const selected = idx == index;
 
                 // Highlight the selected command
                 if (selected) {
@@ -54,7 +53,7 @@ export function menu<T>(callback: (cmd: MenuCommand) => (any & { cont: true }) |
                 println(line);
             }
 
-            let level = mazes.mazes[storage.get().mazeId];
+            const level = mazes.mazes[storage.get().mazeId];
 
             printCommand("Start the selected level");
             printCommand("Select a level (current: " + level.data.name + ")");
@@ -81,7 +80,7 @@ export function menu<T>(callback: (cmd: MenuCommand) => (any & { cont: true }) |
 // Makes the user select one of a number of options
 // Printing of the option is done by the callback
 export function selection(length: number, printer: (index: number) => void) {
-    let cont = {
+    const cont = {
         index: 0,
         selected: false,
         special: false,
@@ -102,7 +101,7 @@ export function selection(length: number, printer: (index: number) => void) {
             // Arrow up is [A on Linux, not supported on Windows
             if (char == "A") {
                 cont.index = rotate(cont.index - 1, 0, length - 1);
-                // Arrow down is [B on Linux, not supported on Windows
+            // Arrow down is [B on Linux, not supported on Windows
             } else if (char == "B") {
                 cont.index = rotate(cont.index + 1, 0, length - 1);
             }
@@ -146,15 +145,15 @@ export type InGameCommand = typeof InGameCommand[keyof typeof InGameCommand];
 export function ingame<T>(world: World, commandCallback: (cmd: InGameCommand) => (T & { cont: false }) | (any & { cont: true, didMove?: boolean, print?: boolean }), calcTurnCallback: () => (T & { cont: false }) | (any & { cont: true, didMove?: boolean, print?: boolean })): T {
     // Prints the minimap
     function printMap() {
-        let size = world.maze.size;
+        const size = world.maze.size;
 
         for (let x = 0; x < size[0]; x++) {
             for (let y = 0; y < size[1]; y++) {
-                let tile = world.tileAt(x, y);
-                let visited = world.isVisited(x, y);
+                const tile = world.tileAt(x, y);
+                const visited = world.isVisited(x, y);
 
                 // Formats the name as specified for the tile
-                let tileText = template(tile.data.mapName);
+                const tileText = template(tile.data.mapName);
 
                 if (visited) {
                     if (world.player.x == x && world.player.y == y) {
@@ -175,17 +174,17 @@ export function ingame<T>(world: World, commandCallback: (cmd: InGameCommand) =>
 
     // Print the actual maze, zoomed in, with entities
     function printMaze() {
-        let size = world.maze.size;
-        let playerPos = [world.player.x, world.player.y];
+        const size = world.maze.size;
+        const playerPos = [world.player.x, world.player.y];
 
         // Width of the visible window left and right / above and below the center of the window
-        let windowMargin = [4, 8];
+        const windowMargin = [4, 8];
         // The size of the visible window
-        let windowSize = windowMargin.map(v => 2 * v + 1);
+        const windowSize = windowMargin.map((v) => 2 * v + 1);
 
         // Compute the center of the window
         // Gets shifted away from the edge if the player is too close to it
-        let center = playerPos.map((v, idx) => clamp(v, windowMargin[idx], size[idx] - windowMargin[idx] - 1));
+        const center = playerPos.map((v, idx) => clamp(v, windowMargin[idx], size[idx] - windowMargin[idx] - 1));
         // If the maze is smaller than the window, we put the window in the center on that axis
         if (windowSize[0] > size[0]) {
             windowSize[0] = size[0];
@@ -199,16 +198,16 @@ export function ingame<T>(world: World, commandCallback: (cmd: InGameCommand) =>
         }
 
         // Top left and bottom right corner coordinates
-        let boundsTopLeft = center.map((v, idx) => (v - windowMargin[idx]));
-        let boundsBottomRight = boundsTopLeft.map((v, idx) => (v + windowSize[idx]));
+        const boundsTopLeft = center.map((v, idx) => (v - windowMargin[idx]));
+        const boundsBottomRight = boundsTopLeft.map((v, idx) => (v + windowSize[idx]));
 
         // Collect all lines to print so we can modify them later (for tutorial text)
-        let lines: string[] = [];
+        const lines: string[] = [];
         // The current offset into the lines array
         let offset = 0;
 
         // The width of the seperators
-        let lineSize = windowSize[1] * 10 + 1;
+        const lineSize = windowSize[1] * 10 + 1;
 
         // Prints the horizontal lines between rows of the maze
         function printSep() {
@@ -236,23 +235,23 @@ export function ingame<T>(world: World, commandCallback: (cmd: InGameCommand) =>
             }
 
             // Prints empty spaces to the given offsets of the current row
-            function emptyLine(...off) {
-                for (let idx of off) {
+            function emptyLine(...off: number[]) {
+                for (const idx of off) {
                     lines[offset + idx] += "         ";
                 }
             }
 
             for (let y = boundsTopLeft[1]; y < boundsBottomRight[1]; y++) {
-                let tile = world.tileAt(x, y);
-                let entity = world.get(x, y);
-                let visible = world.isVisible(x, y);
-                let visited = world.isVisited(x, y);
+                const tile = world.tileAt(x, y);
+                const entity = world.get(x, y);
+                const visible = world.isVisible(x, y);
+                const visited = world.isVisited(x, y);
 
                 // Patch a string to be the given length
                 // If too short, add white spaces in front of the string and at the end so the string is centered as best as possible
                 // If too long, truncate and add '...'
                 function correctLength(str: string, newSize: number, oldLength?: number) {
-                    let size = oldLength || str.length;
+                    const size = oldLength ?? str.length;
                     if (size > 9) {
                         return str.substring(0, newSize - 3) + "...";
                     } else {
@@ -261,16 +260,16 @@ export function ingame<T>(world: World, commandCallback: (cmd: InGameCommand) =>
                 }
 
                 // Get the formatted entity name
-                function collectEnemyString(entity) {
-                    let entityName;
-                    let entityColor;
-                    if (entity.type == worlds.EntityType.player) {
+                function collectEnemyString(entity: { type: EntityType, props: any }) {
+                    let entityName: string;
+                    let entityColor: ChalkInstance;
+                    if (entity.type == EntityType.player) {
                         entityName = "  Player ";
                         entityColor = chalk.green.bold
-                    } else if (entity.type == worlds.EntityType.item) {
+                    } else if (entity.type == EntityType.item) {
                         entityName = "   Item  ";
                         entityColor = chalk.cyan;
-                    } else if (entity.type == worlds.EntityType.enemy) {
+                    } else if (entity.type == EntityType.enemy) {
                         entityName = correctLength(entity.props.name, 9)
                         entityColor = chalk.red.italic
                     } else {
@@ -282,11 +281,11 @@ export function ingame<T>(world: World, commandCallback: (cmd: InGameCommand) =>
                 }
 
                 // The tile name without formatting
-                let cleanedTileName = tile.data.name.replace(/{[\w.(),]* ([a-zA-Z0-9 .-_]*)}/, "$1");
+                const cleanedTileName = tile.data.name.replace(/{[\w.(),]* ([a-zA-Z0-9 .-_]*)}/, "$1");
                 // The formatted tile name with a correct length. Only works correctly if tilename is too short.
-                let tileName = correctLength(tile.data.name, 9, cleanedTileName.length)
+                const tileName = correctLength(tile.data.name, 9, cleanedTileName.length)
                 // The formatted tile name
-                let tileText = template(tileName);
+                const tileText = template(tileName);
 
                 printVerticalLine();
 
@@ -304,7 +303,7 @@ export function ingame<T>(world: World, commandCallback: (cmd: InGameCommand) =>
 
                 // If the tile should be filled, also try to print an entity that might be there, but only the name (should still be filled)
                 if (visited && tile.data.fill) {
-                    let fill = chalk.black.bold(" ####### ");
+                    const fill = chalk.black.bold(" ####### ");
                     lines[offset] += fill;
                     lines[offset + 1] += fill;
                     lines[offset + 2] += fill;
@@ -343,9 +342,9 @@ export function ingame<T>(world: World, commandCallback: (cmd: InGameCommand) =>
         printSep();
 
         // The tutorial text to add right of the maze
-        let textToAdd: string[] = [];
+        const textToAdd: string[] = [];
         // The width of the tutorial text. Gets truncated / widened to this width
-        let textSize = 15;
+        const textSize = 15;
 
         // Adds an empty line to the tutorial text
         function noText() {
@@ -353,7 +352,7 @@ export function ingame<T>(world: World, commandCallback: (cmd: InGameCommand) =>
         }
 
         // Adds the given line to the tutorial text
-        function text(txt) {
+        function text(txt: string) {
             txt = " " + txt;
             if (txt.length > textSize) {
                 textToAdd.push(txt.substring(0, textSize - 3) + "...");
@@ -368,12 +367,12 @@ export function ingame<T>(world: World, commandCallback: (cmd: InGameCommand) =>
         text("Rounds: " + world.rounds);
 
         // Add the text of the level
-        let tutorialText = world.maze.data.text;
+        const tutorialText = world.maze.data.text;
         if (tutorialText.length > 0) {
             noText();
             text("-".repeat(textSize - 1));
             noText()
-            for (let line of tutorialText) {
+            for (const line of tutorialText) {
                 text(line);
             }
             noText();
@@ -382,7 +381,7 @@ export function ingame<T>(world: World, commandCallback: (cmd: InGameCommand) =>
         }
 
         // Add the tutorial text to the right of the maze
-        for (let idx in textToAdd) {
+        for (const idx in textToAdd) {
             if (lines[idx]) {
                 lines[idx] += textToAdd[idx];
             } else {
@@ -391,7 +390,7 @@ export function ingame<T>(world: World, commandCallback: (cmd: InGameCommand) =>
         }
 
         // Actually print the lines
-        for (let line of lines) {
+        for (const line of lines) {
             println(line);
         }
     }
@@ -468,7 +467,7 @@ export function ingame<T>(world: World, commandCallback: (cmd: InGameCommand) =>
                         cont: true,
                         help: true,
                     };
-                    // Special keys on linux are printed like [X
+                // Special keys on linux are printed like [X
                 } else if (char == "[") {
                     special = true;
                 } else if (char == "w") {

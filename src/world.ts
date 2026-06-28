@@ -15,7 +15,7 @@ export const Direction = {
     north: 3,
 
     toString(dir: Direction): string {
-        return Object.keys(Direction).find(key => Direction[key] === dir) || "";
+        return Object.keys(Direction).find((key) => Direction[key] === dir) ?? "";
     },
 
     fromString(dir: string): Direction {
@@ -50,7 +50,7 @@ export class World {
     constructor(maze: Maze) {
         this.maze = maze;
         this.data = new WorldData(this);
-        let world = this;
+        const world = this;
         // Construct the tiles from the TileData
         this.tiles = List(maze.size[0], function(x) {
             return List(maze.size[1], function(y) {
@@ -61,7 +61,7 @@ export class World {
         this.entities = {};
         this.visited = {};
         this.playerVisibilityMap = null;
-        let { x, y } = maze.start;
+        const { x, y } = maze.start;
         this.player = new Position(x, y);
         // Add the player
         this.set(x, y, {
@@ -77,8 +77,8 @@ export class World {
         this.visit();
 
         // Add the enemies
-        for (let enemy of maze.enemies) {
-            let pos = new Position(enemy.pos)
+        for (const enemy of maze.enemies) {
+            const pos = new Position(enemy.pos)
             this.set(pos.x, pos.y, this.createEnemy(enemy.type));
         }
     }
@@ -93,12 +93,12 @@ export class World {
 
     // Returns a drop from the  given enemy, if any
     createDrop(enemy: { type: EntityType, props: EnemyInstance }) {
-        let id = enemy.props.loot;
+        const id = enemy.props.loot;
         if (!id) {
             return null;
         }
 
-        let item = loot.tables[id].get();
+        const item = loot.tables[id].get();
         if (item) {
             return {
                 type: EntityType.item,
@@ -114,9 +114,9 @@ export class World {
     isVisited(x: number, y: number) {
         const line = this.visited[x];
         if (line) {
-            let res = line[y];
+            const res = line[y];
 
-            return res ? res : false;
+            return res ?? false;
         } else {
             return false;
         }
@@ -135,8 +135,8 @@ export class World {
 
     // Mark all tiles in the visibility range of the player as visited
     visit() {
-        let { x, y } = this.player;
-        let range = this.get(this.player.x, this.player.y)!.props.sight + 2;
+        const { x, y } = this.player;
+        const range = this.get(this.player.x, this.player.y)!.props.sight + 2;
 
         for (let i = x - range; i <= x + range; i++) {
             for (let j = y - range; j <= y + range; j++) {
@@ -165,9 +165,9 @@ export class World {
     get(x: number, y: number) {
         const line = this.entities[x];
         if (line) {
-            let res = line[y];
+            const res = line[y];
 
-            return res ? res : null;
+            return res ?? null;
         } else {
             return null;
         }
@@ -202,21 +202,21 @@ export class World {
     // Ticks all tiles
     tick() {
         this.data.callNewTurn();
-        this.tiles.forEach(row => row.forEach(tile => tile.tick()));
+        this.tiles.forEach((row) => row.forEach((tile) => tile.tick()));
     }
 
     // Process enemies and move them if required
     enemyMove() {
-        let es: { enemy: { type: EntityType, props: EnemyInstance }, loc: [number, number] }[] = [];
+        const es: { enemy: { type: EntityType, props: EnemyInstance }, loc: [number, number] }[] = [];
 
         // Collect all enemies that see the player
         for (let x = 0; x < this.maze.size[0]; x++) {
             for (let y = 0; y < this.maze.size[1]; y++) {
-                let enemy = this.get(x, y);
+                const enemy = this.get(x, y);
 
                 if (enemy && enemy.type == EntityType.enemy) {
-                    let sight = enemy.props.sight;
-                    let visionMap = createVisionMap(this, sight, new Position(x, y));
+                    const sight = enemy.props.sight;
+                    const visionMap = createVisionMap(this, sight, new Position(x, y));
                     if (visionMap.get(this.player.x, this.player.y)) {
                         es.push({
                             enemy,
@@ -228,15 +228,15 @@ export class World {
         }
 
         for (const target of es) {
-            let enemy = target.enemy;
+            const enemy = target.enemy;
             let [x, y] = target.loc;
-            let range = enemy.props.range;
+            const range = enemy.props.range;
 
             // For every speed the enemy has
             for (let i = 0; i < enemy.props.speed; i++) {
-                let px = this.player.x;
-                let py = this.player.y;
-                let player = this.get(px, py)!;
+                const px = this.player.x;
+                const py = this.player.y;
+                const player = this.get(px, py)!;
 
                 let newx: number | null = null;
                 let newy: number | null = null;
@@ -285,18 +285,18 @@ export class World {
 
     // Makes the player go in the given direcction
     walk(dir: Direction) {
-        let { x, y } = this.player;
-        let player = this.get(x, y)!;
+        const { x, y } = this.player;
+        const player = this.get(x, y)!;
 
         // Moves the player to the given tile and returns whether it was a legal move
-        let moveTo = (newx, newy) => {
+        const moveTo = (newx: number, newy: number) => {
             // It's illegal to go outside the  map
             if (newx < 0 || newy < 0 || newx >= this.maze.size[0] || newy >= this.maze.size[1]) {
                 return false;
             }
 
-            let target = this.get(newx, newy);
-            let targetTile = this.tileAt(newx, newy);
+            const target = this.get(newx, newy);
+            const targetTile = this.tileAt(newx, newy);
 
             // If we can go there, move  the player
             if ((target === null || target.type == EntityType.item) && !targetTile.data.wall) {
@@ -309,7 +309,7 @@ export class World {
 
                 // If there is an item, collect it
                 if (target) {
-                    let max = target.props.maxHealth;
+                    const max = target.props.maxHealth;
                     if (max) {
                         if (player.props.health < max) {
                             player.props.health = Math.min(player.props.health + target.props.health, max);
@@ -318,8 +318,8 @@ export class World {
                         player.props.health += target.props.health;
                     }
 
-                    player.props.damage += target.props.damage || 0;
-                    player.props.sight += target.props.sight || 0;
+                    player.props.damage += target.props.damage ?? 0;
+                    player.props.sight += target.props.sight ?? 0;
                 }
 
                 this.rounds += 1;
@@ -378,7 +378,7 @@ export class WorldData {
 
     // Call the new turn callback for each registered data segment
     callNewTurn() {
-        this.segments.forEach(v => v.newTurn());
+        this.segments.forEach((v) => v.newTurn());
     }
 
 
@@ -391,7 +391,7 @@ export class WorldData {
 
     // Returns a data segment of the given type, if found
     get<T extends WorldDataSegment>(type: WorldDataType<T>): T | undefined {
-        return this.segments.find(v => v instanceof type) as T;
+        return this.segments.find((v) => v instanceof type) as T;
     }
 }
 
@@ -402,10 +402,10 @@ export interface WorldDataType<T extends WorldDataSegment> {
 
 // An actual data  segment
 export interface WorldDataSegment {
-    newTurn();
+    newTurn(): void;
 }
 
 // Creates a world from a given maze
-export function create(maze) {
+export function create(maze: Maze) {
     return new World(maze);
 }

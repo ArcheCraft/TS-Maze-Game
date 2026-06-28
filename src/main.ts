@@ -46,14 +46,14 @@ function runMenu(): { cont: boolean, start: boolean, freeplay: boolean } {
             // Completed levels determine what levels are available
             const completed = storage.get().completed;
 
-            let levels: LevelPrintDef[] = [];
-            let tutorials: LevelPrintDef[] = [];
+            const levels: LevelPrintDef[] = [];
+            const tutorials: LevelPrintDef[] = [];
 
-            let available = {
+            const available = {
                 levels: 0,
                 tutorials: 0,
             };
-            for (let id in maze.mazes) {
+            for (const id in maze.mazes) {
                 let level = maze.mazes[id];
 
                 let arr = levels;
@@ -104,8 +104,8 @@ function runMenu(): { cont: boolean, start: boolean, freeplay: boolean } {
             const levelCount = available.levels;
             const mazeCount = freeplayCount + tutorialCount + levelCount;
 
-            let chosen = cli.selection(mazeCount, function(index: number) {
-                let width = 40;
+            const chosen = cli.selection(mazeCount, function(index: number) {
+                const width = 40;
                 println("-".repeat(width));
                 println(chalk.yellow(" ".repeat((width - 20) / 2) + "   LEVEL SELECTION  " + " ".repeat((width - 20) / 2)));
                 println();
@@ -114,9 +114,9 @@ function runMenu(): { cont: boolean, start: boolean, freeplay: boolean } {
 
                 // Prints an array of levels
                 function printArray(array: LevelPrintDef[]) {
-                    for (let entry of array) {
+                    for (const entry of array) {
                         let line = "";
-                        let selected = entry.available && idx == index;
+                        const selected = entry.available && idx == index;
 
                         if (entry.available) {
                             if (selected) {
@@ -129,7 +129,7 @@ function runMenu(): { cont: boolean, start: boolean, freeplay: boolean } {
                             line += "    ";
                         }
 
-                        let text;
+                        let text: string;
                         if (entry.done) {
                             text = chalk.green(entry.name);
                         } else if (entry.available) {
@@ -167,7 +167,7 @@ function runMenu(): { cont: boolean, start: boolean, freeplay: boolean } {
 
             // If the user selected something
             if (chosen != -1) {
-                let entry;
+                let entry!: LevelPrintDef;
                 let idx = 1;
                 // If he chose freeplay, we set the freeplay trigger
                 if (chosen == 0) {
@@ -212,7 +212,7 @@ function runMenu(): { cont: boolean, start: boolean, freeplay: boolean } {
 function runMaze(currMaze: Maze) {
     let currWorld = world.create(currMaze);
 
-    let cont: { restart: boolean, survived?: boolean, exited?: boolean } = cli.ingame(currWorld, function(cmd) {
+    const cont: { restart: boolean, survived?: boolean, exited?: boolean } = cli.ingame(currWorld, function(cmd) {
         let moved = false;
 
         if (cmd == cli.InGameCommand.exit) {
@@ -288,8 +288,8 @@ function runMaze(currMaze: Maze) {
 }
 
 // Prints the result of played level
-function printResult(res, cont) {
-    function printSep(size) {
+function printResult(res: { start?: boolean }, cont: { exited?: boolean, survived?: boolean }) {
+    function printSep(size: number) {
         println();
         println(chalk.gray("-".repeat(size)));
         println();
@@ -315,8 +315,8 @@ function printResult(res, cont) {
 }
 
 // Generates a freeplay level and runs it
-function freeplay(cont: { restart: boolean, survived?: boolean, exited?: boolean, won?: boolean }, level) {
-    let currMaze = generator.createMaze(level + 3, level + 3);
+function freeplay(cont: { restart: boolean, survived?: boolean, exited?: boolean, won?: boolean }, level: number) {
+    const currMaze = generator.createMaze(level + 3, level + 3);
 
     while (cont.restart) {
         cont = runMaze(currMaze);
@@ -355,7 +355,7 @@ while (res.start) {
         }
         // If he selected a level, we load that level and run it
     } else {
-        let currMaze = maze.mazes[storage.get().mazeId];
+        const currMaze = maze.mazes[storage.get().mazeId];
 
         while (cont.restart) {
             cont = runMaze(currMaze);
@@ -363,7 +363,7 @@ while (res.start) {
 
         if (printResult(res, cont)) {
             // If he won, we also save the level so dependent levels are now unlocked
-            let completed = storage.get().completed;
+            const completed = storage.get().completed;
             if (!completed.includes(storage.get().mazeId)) {
                 completed.push(storage.get().mazeId);
             }

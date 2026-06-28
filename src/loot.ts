@@ -22,7 +22,7 @@ class Loot {
     get() {
         let rand = Math.random();
 
-        for (let entry of this.content) {
+        for (const entry of this.content) {
             if (rand < entry.chance) {
                 return entry.item;
             } else {

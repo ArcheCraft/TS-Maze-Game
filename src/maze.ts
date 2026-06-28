@@ -96,11 +96,11 @@ export class TileData extends JsonInitialized {
         this.loadData(data, {
             spawner: {
                 default: null,
-                creator: v => ((pos: Position, world: World) => new TileSpawnerData(v, world, pos)),
+                creator: (v) => ((pos: Position, world: World) => new TileSpawnerData(v, world, pos)),
             },
             portal: {
                 default: null,
-                creator: v => ((pos: Position, world: World) => new TilePortalData(v, world, pos)),
+                creator: (v) => ((pos: Position, world: World) => new TilePortalData(v, world, pos)),
             },
             wall: {
                 default: false,
@@ -128,7 +128,7 @@ export class TileData extends JsonInitialized {
 
 // Tile behavoiur, e.g. a portal or spawner
 interface TileBehaviourData {
-    tick(tileData: TileDataInstance);
+    tick(tileData: TileDataInstance): void;
 }
 
 // The instance of a tile (with actual spawner data)
@@ -237,7 +237,7 @@ class WorldPortalData implements WorldDataSegment {
 
     // Returns the portal to teleport to
     getTarget(portal: TilePortalData) {
-        let all = this.portals[portal.id].filter(v => !Position.equals(v, portal.pos));
+        const all = this.portals[portal.id].filter((v) => !Position.equals(v, portal.pos));
         if (all.length == 0) {
             return null;
         }
@@ -286,14 +286,14 @@ export class TilePortalData extends JsonInitialized implements TileBehaviourData
     }
 
     // Ticks this portal
-    tick(tileData: TileDataInstance) {
+    tick(_tileData: TileDataInstance) {
         // Only teleport if allowed and the player is on this  tile
         if (this.isSource && this.id != -1 && !this.world.data.get(WorldPortalDataType)!.teleported && Position.equals(this.world.player, this.pos)) {
-            let target = this.world.data.get(WorldPortalDataType)!.getTarget(this)
+            const target = this.world.data.get(WorldPortalDataType)!.getTarget(this)
             // Also check there is nothing on the target tile
             if (target != null && this.world.get(target.x, target.y) == null) {
-                let { x, y } = this.world.player;
-                let player = this.world.get(x, y);
+                const { x, y } = this.world.player;
+                const player = this.world.get(x, y);
                 this.world.set(x, y, null);
                 this.world.set(target.x, target.y, player);
                 this.world.player = target;
@@ -311,7 +311,7 @@ export class TilePortalData extends JsonInitialized implements TileBehaviourData
 export function readTiles(size: [number, number], array: (number | string)[][], tiles: TileDefinition<any>) {
     return List(size[0], function(x) {
         return List(size[1], function(y) {
-            let tile = array[x][y];
+            const tile = array[x][y];
             if (tile in defaultTiles) {
                 return defaultTiles[tile]
             } else {
@@ -355,12 +355,12 @@ export const mazes: { [id: string]: Maze } = {};
 export function read(id: string, data: string) {
     const json = JSON.parse(data);
 
-    let maze = new Maze(json.maze, json.start, json.end, json.enemies, [json.maze.length, json.maze[0].length], json.player, json.tiles || {}, {
+    const maze = new Maze(json.maze, json.start, json.end, json.enemies, [json.maze.length, json.maze[0].length], json.player, json.tiles ?? {}, {
         dependencies: json.dependencies,
         name: json.name,
-        tutorial: json.tutorial || false,
+        tutorial: json.tutorial ?? false,
         order: json.order,
-        text: json.text || []
+        text: json.text ?? []
     });
     mazes[id] = maze;
     return maze;

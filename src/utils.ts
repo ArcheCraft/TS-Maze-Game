@@ -11,7 +11,7 @@ export function dataFolder(folder: string) {
 // Read all .json files in the given folder
 export function readDataFolder(folder: string, read: (id: string, data: any) => void) {
     const entries = dataFolder(folder);
-    for (let file of entries) {
+    for (const file of entries) {
         const data = fs.readFileSync(file, { encoding: "utf8" });
         const id = new RegExp(`${folder}/(.*)\\.json`).exec(file)![1]
         read(id, data);
@@ -74,7 +74,7 @@ export class Clear {
 export const clear = new Clear();
 
 // Rotate a cursor between the given min and max values
-export function rotate(value, min, max) {
+export function rotate(value: number, min: number, max: number) {
     if (value < min) {
         return max + (value - min + 1);
     } else if (value > max) {
@@ -85,17 +85,17 @@ export function rotate(value, min, max) {
 }
 
 // Clamp a value between the given min and max values
-export function clamp(value, min, max) {
+export function clamp(value: number, min: number, max: number) {
     return Math.min(max, Math.max(value, min));
 }
 
 // Checks whether target contains every element from source
-export function containsAll(source, target) {
-    return source.every(v => target.includes(v));
+export function containsAll<T>(source: T[], target: T[]) {
+    return source.every((v) => target.includes(v));
 }
 
 // Checks whether two array's contents are equal
-export function arrayEquals(source, target) {
+export function arrayEquals<T>(source: T[], target: T[]) {
     return containsAll(source, target) && containsAll(target, source);
 }
 
@@ -106,14 +106,14 @@ export class Position {
 
     constructor(values: Position | [number, number] | { x: number, y: number });
     constructor(x: number, y: number);
-    constructor(value, y?: number) {
+    constructor(value: Position | [number, number] | { x: number, y: number } | number, y?: number) {
         if (value instanceof Position) {
             this.x = value.x;
             this.y = value.y;
         } else if (value instanceof Array) {
             this.x = value[0];
             this.y = value[1];
-        } else if (typeof (value) == "object") {
+        } else if (value && typeof (value) == "object") {
             this.x = value.x;
             this.y = value.y;
         } else if (y !== undefined) {
@@ -138,18 +138,15 @@ export class Position {
 export class JsonInitialized {
     // Loads the given properties from the given data
     loadData(data: any | null, properties: { [property: string]: { default: any, creator?(arg: any): any } }) {
-        for (let prop in properties) {
+        for (const prop in properties) {
             this.loadKey(data, prop, properties[prop]);
         }
     }
 
     loadKey(data: any | null, key: string, options: { default: any, creator?(arg: any): any }) {
-        let creator = options.creator || (v => v);
-        if ((data != null || data != undefined) && (data[key] != null || data[key] != undefined)) {
-            this[key] = creator(data[key]);
-        } else {
-            this[key] = creator(options.default);
-        }
+        const creator = options.creator ?? ((v) => v);
+        const raw = data?.[key] ?? options.default;
+        this[key] = creator(raw);
     }
 }
 
@@ -171,7 +168,7 @@ export class Storage extends JsonInitialized {
     }
 }
 
-export const storage: { ensureFolder(): void; path: string; folder: string; data: Storage | null; load(): (Storage); get(): Storage; save(): void } = {
+export const storage: { ensureFolder(): void; path: string; folder: string; data: Storage | null; load(): Storage; get(): Storage; save(): void } = {
     path: path.join(process.cwd(), "data/storage.json"),
     folder: path.join(process.cwd(), "data/"),
     data: null,
@@ -194,7 +191,7 @@ export const storage: { ensureFolder(): void; path: string; folder: string; data
     },
     // Returns the storage and loads it if neccessary
     get() {
-        return storage.data || storage.load();
+        return storage.data ?? storage.load();
     },
     // Saves the storage
     save() {

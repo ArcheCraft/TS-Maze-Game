@@ -19,26 +19,26 @@ function generateNodes(width: number, height: number) {
         return Math.abs(first.x - second.x) + Math.abs(first.y - second.y) == 1;
     }
 
-    let nodes = Array<Cell>(width * height);
+    const nodes = Array<Cell>(width * height);
     for (let y = 0; y < height; y++) {
         for (let x = 0; x < width; x++) {
-            let cell = { x, y };
+            const cell = { x, y };
             nodes[locate(cell)] = cell;
         }
     }
 
     let node = randomElement(nodes);
-    let stack = [node];
-    let maze = new Map<Cell, Array<Cell>>();
+    const stack = [node];
+    const maze = new Map<Cell, Array<Cell>>();
 
-    for (let node of nodes) {
+    for (const node of nodes) {
         maze.set(node, []);
     }
 
     while (node) {
-        let neighbors = nodes.filter(other => !maze.get(other)!.length && adjacent(node, other));
+        const neighbors = nodes.filter((other) => !maze.get(other)!.length && adjacent(node, other));
         if (neighbors.length) {
-            let neighbor = randomElement(neighbors);
+            const neighbor = randomElement(neighbors);
             maze.get(node)!.push(neighbor);
             maze.get(neighbor)!.push(node);
             stack.unshift(neighbor);
@@ -54,12 +54,12 @@ function generateNodes(width: number, height: number) {
 
 // Generates a maze of the given size in modules and returns it
 export function createMaze(width: number, height: number) {
-    let maze = mazes.create(modules.size[0] * height, modules.size[1] * width);
-    let nodes = generateNodes(width, height);
+    const maze = mazes.create(modules.size[0] * height, modules.size[1] * width);
+    const nodes = generateNodes(width, height);
 
-    for (let [node, neighbors] of nodes) {
-        let directions: Direction[] = [];
-        for (let neighbor of neighbors) {
+    for (const [node, neighbors] of nodes) {
+        const directions: Direction[] = [];
+        for (const neighbor of neighbors) {
             if (neighbor.x == node.x + 1) {
                 directions.push(Direction.south);
             }
@@ -81,14 +81,14 @@ export function createMaze(width: number, height: number) {
 
 // Find a module for the given directions and add it to the maze
 function createModule(maze: Maze, node: Cell, directions: Direction[], isStart: boolean, isEnd: boolean) {
-    let possible = modules.filterModules(modules.modules, directions);
+    const possible = modules.filterModules(modules.modules, directions);
     if (possible.length == 0) {
         println("Failed to find module for directions [" + directions.map(Direction.toString) + "]");
     }
-    let module = randomElement(possible);
+    const module = randomElement(possible);
 
     // Add tiles
-    let offset = [node.x * modules.size[0], node.y * modules.size[1]];
+    const offset = [node.x * modules.size[0], node.y * modules.size[1]];
     for (let x = 0; x < modules.size[0]; x++) {
         for (let y = 0; y < modules.size[1]; y++) {
             maze.set(offset[0] + x, offset[1] + y, module.maze[x][y]);
@@ -96,7 +96,7 @@ function createModule(maze: Maze, node: Cell, directions: Direction[], isStart: 
     }
 
     // Add enemies
-    for (let entry of module.enemies) {
+    for (const entry of module.enemies) {
         maze.enemies.push({
             pos: [offset[0] + entry.pos[0], offset[1] + entry.pos[1]],
             type: entry.type
