@@ -1,5 +1,5 @@
-import {JsonInitialized, Position, List, readDataFolder} from "./utils.js";
-import { WorldDataSegment, World, WorldDataType } from "./world.js";
+import { JsonInitialized, Position, List, readDataFolder } from "./utils.ts";
+import { type WorldDataSegment, World, type WorldDataType } from "./world.ts";
 
 export type TileDefinition<T> = { [id: (number | string)]: T };
 
@@ -292,14 +292,14 @@ export class TilePortalData extends JsonInitialized implements TileBehaviourData
             let target = this.world.data.get(WorldPortalDataType)!.getTarget(this)
             // Also check there is nothing on the target tile
             if (target != null && this.world.get(target.x, target.y) == null) {
-                let {x, y} = this.world.player;
+                let { x, y } = this.world.player;
                 let player = this.world.get(x, y);
                 this.world.set(x, y, null);
                 this.world.set(target.x, target.y, player);
                 this.world.player = target;
 
                 this.world.markVisibilityDirty();
-				this.world.visit();
+                this.world.visit();
 
                 this.world.data.get(WorldPortalDataType)!.teleported = true;
             }
@@ -309,8 +309,8 @@ export class TilePortalData extends JsonInitialized implements TileBehaviourData
 
 // Parse the tile definitions into the TileData array
 export function readTiles(size: [number, number], array: (number | string)[][], tiles: TileDefinition<any>) {
-    return List(size[0], function (x) {
-        return List(size[1], function (y) {
+    return List(size[0], function(x) {
+        return List(size[1], function(y) {
             let tile = array[x][y];
             if (tile in defaultTiles) {
                 return defaultTiles[tile]
@@ -331,7 +331,7 @@ export function create(x: number, y: number) {
         }
         array.push(layer);
     }
-    return new Maze(array, [0, 0], [x - 1, y - 1], [], [x, y], {hp: 100, damage: 24});
+    return new Maze(array, [0, 0], [x - 1, y - 1], [], [x, y], { hp: 100, damage: 24 });
 }
 
 // The default tile types (wall and stone)

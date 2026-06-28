@@ -1,30 +1,31 @@
-import {print, println, rotate, clear, clamp, storage} from "./utils.js";
-import * as mazes from "./maze.js";
+import { print, println, rotate, clear, clamp, storage } from "./utils.ts";
+import * as mazes from "./maze.ts";
 import chalk from "chalk";
-import {template} from "chalk-template";
+import { template } from "chalk-template";
 import * as readline from "readline-sync";
-import * as worlds from "./world.js";
-import {World} from "./world.js";
+import * as worlds from "./world.ts";
+import { World } from "./world.ts";
 
-export enum MenuCommand {
-    start,
-    exit,
-    select
-}
+export const MenuCommand = {
+    start: 0,
+    exit: 1,
+    select: 2
+} as const;
+export type MenuCommand = typeof MenuCommand[keyof typeof MenuCommand];
 
 // Initalizes the CLI
 export function start() {
-    readline.setDefaultOptions({prompt: chalk.yellow("> ")});
+    readline.setDefaultOptions({ prompt: chalk.yellow("> ") });
 }
 
 // Menu function:
 // - Prints the menu
 // - Calls the callbacck on user commands
 // - Returns any data the callback returned
-export function menu<T>(callback: (arg: MenuCommand) => (any & { cont: true }) | (T & { cont: false })): T {
+export function menu<T>(callback: (cmd: MenuCommand) => (any & { cont: true }) | (T & { cont: false })): T {
     let cont: T & { cont: boolean };
     do {
-        const selected = selection(3, function (index) {
+        const selected = selection(3, function(index) {
             let width = 50;
             println("-".repeat(width));
             println(chalk.green(" ".repeat((width - 10) / 2) + " MAIN MENU" + " ".repeat((width - 10) / 2)));
@@ -101,7 +102,7 @@ export function selection(length: number, printer: (index: number) => void) {
             // Arrow up is [A on Linux, not supported on Windows
             if (char == "A") {
                 cont.index = rotate(cont.index - 1, 0, length - 1);
-            // Arrow down is [B on Linux, not supported on Windows
+                // Arrow down is [B on Linux, not supported on Windows
             } else if (char == "B") {
                 cont.index = rotate(cont.index + 1, 0, length - 1);
             }
@@ -126,14 +127,15 @@ export function selection(length: number, printer: (index: number) => void) {
     return cont.index;
 }
 
-export enum InGameCommand {
-    up,
-    left,
-    down,
-    right,
-    exit,
-    restart
-}
+export const InGameCommand = {
+    up: 0,
+    left: 1,
+    down: 2,
+    right: 3,
+    exit: 4,
+    restart: 5
+} as const;
+export type InGameCommand = typeof InGameCommand[keyof typeof InGameCommand];
 
 // Ingame loop:
 // - Prints map / minimap / help
@@ -141,7 +143,7 @@ export enum InGameCommand {
 // - Calls callback with the user's command
 // - Between turns, if the player moved, call the turn callback
 // - Return additional data provided by any of the  callbacks
-export function ingame<T>(world: World, commandCallback: (InGameCommand) => (T & { cont: false }) | (any & { cont: true, didMove?: boolean, print?: boolean }), calcTurnCallback: () => (T & { cont: false }) | (any & { cont: true, didMove?: boolean, print?: boolean })): T {
+export function ingame<T>(world: World, commandCallback: (cmd: InGameCommand) => (T & { cont: false }) | (any & { cont: true, didMove?: boolean, print?: boolean }), calcTurnCallback: () => (T & { cont: false }) | (any & { cont: true, didMove?: boolean, print?: boolean })): T {
     // Prints the minimap
     function printMap() {
         let size = world.maze.size;
@@ -275,7 +277,7 @@ export function ingame<T>(world: World, commandCallback: (InGameCommand) => (T &
                         entityName = " Unknown ";
                         entityColor = chalk.magenta.bold.italic
                     }
-    
+
                     return entityColor(entityName);
                 }
 
@@ -311,7 +313,7 @@ export function ingame<T>(world: World, commandCallback: (InGameCommand) => (T &
                     } else {
                         lines[offset + 3] += fill;
                     }
-                // If there is an entity, print it with it's stats
+                    // If there is an entity, print it with it's stats
                 } else if (entity && visible && visited) {
                     lines[offset] += collectEnemyString(entity);
                     lines[offset + 1] += chalk.redBright.bold(" + : " + entity.props.health.toString().padEnd(3) + " ");
@@ -414,10 +416,10 @@ export function ingame<T>(world: World, commandCallback: (InGameCommand) => (T &
             println(chalk.cyan("  R                   : restart this level"));
             println(chalk.cyan("  H                   : print this help"));
             println(chalk.green("----- HELP ------"));
-        // If the user opened the minimap, don't print the maze
+            // If the user opened the minimap, don't print the maze
         } else if (cont.map) {
             printMap();
-        // Otherwise, print the maze
+            // Otherwise, print the maze
         } else {
             printMaze();
         }
@@ -437,7 +439,7 @@ export function ingame<T>(world: World, commandCallback: (InGameCommand) => (T &
                     help: false,
                 };
             }
-        // If the minimap is open, only allow closing it
+            // If the minimap is open, only allow closing it
         } else if (cont.map) {
             if (char == "m") {
                 cont = {
@@ -445,7 +447,7 @@ export function ingame<T>(world: World, commandCallback: (InGameCommand) => (T &
                     map: false,
                 };
             }
-        // Otherwise process all keys
+            // Otherwise process all keys
         } else {
             // Special key on Linux (Arrow keys)
             if (special) {
@@ -466,7 +468,7 @@ export function ingame<T>(world: World, commandCallback: (InGameCommand) => (T &
                         cont: true,
                         help: true,
                     };
-                // Special keys on linux are printed like [X
+                    // Special keys on linux are printed like [X
                 } else if (char == "[") {
                     special = true;
                 } else if (char == "w") {
@@ -493,7 +495,7 @@ export function ingame<T>(world: World, commandCallback: (InGameCommand) => (T &
             if (!special && cont.didMove) {
                 // Call the turn callback and merge it's result with old result
                 delete cont.didMove;
-                cont = {...cont, ...calcTurnCallback()};
+                cont = { ...cont, ...calcTurnCallback() };
             }
         }
     } while (cont.cont)

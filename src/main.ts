@@ -1,14 +1,14 @@
-import * as cli from "./cli.js";
-import {println, storage, containsAll, clear, randomize, print} from "./utils.js";
-import * as maze from "./maze.js";
-import * as world from "./world.js";
-import * as enemies from "./enemies.js";
-import * as loot from "./loot.js";
-import * as modules from "./module.js";
-import * as generator from "./generator.js";
+import * as cli from "./cli.ts";
+import { println, storage, containsAll, clear, randomize, print } from "./utils.ts";
+import * as maze from "./maze.ts";
+import * as world from "./world.ts";
+import * as enemies from "./enemies.ts";
+import * as loot from "./loot.ts";
+import * as modules from "./module.ts";
+import * as generator from "./generator.ts";
 import chalk from "chalk";
-import {MenuCommand} from "./cli.js";
-import {Maze} from "./maze.js";
+import { MenuCommand } from "./cli.ts";
+import { Maze } from "./maze.ts";
 
 // Randomize the random number generator that may on different implementations be not random
 randomize();
@@ -30,8 +30,8 @@ let res = {
 storage.load();
 
 // Prints the menu and processes user commands
-function runMenu(): { start: true, freeplay: false } {
-    return cli.menu(function (cmd: MenuCommand) {
+function runMenu(): { cont: boolean, start: boolean, freeplay: boolean } {
+    return cli.menu(function(cmd: MenuCommand) {
         if (cmd == cli.MenuCommand.start) {
             return {
                 cont: false,
@@ -48,21 +48,21 @@ function runMenu(): { start: true, freeplay: false } {
 
             let levels: LevelPrintDef[] = [];
             let tutorials: LevelPrintDef[] = [];
-            
+
             let available = {
                 levels: 0,
                 tutorials: 0,
             };
             for (let id in maze.mazes) {
                 let level = maze.mazes[id];
-                
+
                 let arr = levels;
                 let av = "levels";
                 if (level.data.tutorial) {
                     arr = tutorials;
                     av = "tutorials";
                 }
-                
+
                 // Definitely available if already completed
                 if (completed.includes(id)) {
                     arr.push({
@@ -73,7 +73,7 @@ function runMenu(): { start: true, freeplay: false } {
                         id,
                     });
                     available[av] += 1;
-                // Also available if all dependencies completed
+                    // Also available if all dependencies completed
                 } else if (containsAll(level.data.dependencies, completed)) {
                     arr.push({
                         name: level.data.name,
@@ -82,7 +82,7 @@ function runMenu(): { start: true, freeplay: false } {
                         id,
                     });
                     available[av] += 1;
-                // Otherwise not available
+                    // Otherwise not available
                 } else {
                     arr.push({
                         name: level.data.name,
@@ -91,33 +91,33 @@ function runMenu(): { start: true, freeplay: false } {
                     });
                 }
             }
-            
+
             // Sort the levels after the defined order
-            let sorter = function (a: LevelPrintDef, b: LevelPrintDef) {
+            let sorter = function(a: LevelPrintDef, b: LevelPrintDef) {
                 return a.order.localeCompare(b.order);
             };
             levels.sort(sorter);
             tutorials.sort(sorter);
-            
+
             const freeplayCount = 1;
-            const tutorialCount = tutorials.length;
-            const levelCount = levels.length;
+            const tutorialCount = available.tutorials;
+            const levelCount = available.levels;
             const mazeCount = freeplayCount + tutorialCount + levelCount;
-            
-            let chosen = cli.selection(mazeCount, function (index: number) {
+
+            let chosen = cli.selection(mazeCount, function(index: number) {
                 let width = 40;
                 println("-".repeat(width));
                 println(chalk.yellow(" ".repeat((width - 20) / 2) + "   LEVEL SELECTION  " + " ".repeat((width - 20) / 2)));
                 println();
-                
+
                 let idx = 1;
-                
+
                 // Prints an array of levels
                 function printArray(array: LevelPrintDef[]) {
                     for (let entry of array) {
                         let line = "";
                         let selected = entry.available && idx == index;
-                        
+
                         if (entry.available) {
                             if (selected) {
                                 line += " >> ";
@@ -128,7 +128,7 @@ function runMenu(): { start: true, freeplay: false } {
                         } else {
                             line += "    ";
                         }
-                        
+
                         let text;
                         if (entry.done) {
                             text = chalk.green(entry.name);
@@ -137,16 +137,16 @@ function runMenu(): { start: true, freeplay: false } {
                         } else {
                             text = chalk.gray(entry.name);
                         }
-                        
+
                         if (selected) {
                             text = chalk.bold(text);
                         }
                         line += text;
-                        
+
                         println(line);
                     }
                 }
-                
+
                 println(chalk.yellow("      Freeplay"));
                 if (index == 0) {
                     print(" >> ");
@@ -160,11 +160,11 @@ function runMenu(): { start: true, freeplay: false } {
                 println();
                 println(chalk.yellow("      Levels"));
                 printArray(levels);
-                
+
                 println();
                 println("-".repeat(width));
             });
-            
+
             // If the user selected something
             if (chosen != -1) {
                 let entry;
@@ -176,7 +176,7 @@ function runMenu(): { start: true, freeplay: false } {
                         freeplay: true,
                         start: true
                     };
-                // Otherwise we load the selected level
+                    // Otherwise we load the selected level
                 } else {
                     for (let index = 0; index < tutorialCount + levelCount; index++) {
                         if (index < tutorialCount) {
@@ -192,13 +192,13 @@ function runMenu(): { start: true, freeplay: false } {
                         }
                     }
                 }
-                
-                
+
+
                 // Save the current level so it gets selected automatically next time the user starts the  game
                 storage.get().mazeId = entry.id;
             }
         }
-        
+
         return {
             cont: true,
         };
@@ -211,10 +211,10 @@ function runMenu(): { start: true, freeplay: false } {
 // - Checks whether the player survived
 function runMaze(currMaze: Maze) {
     let currWorld = world.create(currMaze);
-    
-    let cont: { restart: boolean, survived?: boolean, exited?: boolean } = cli.ingame(currWorld, function (cmd) {
+
+    let cont: { restart: boolean, survived?: boolean, exited?: boolean } = cli.ingame(currWorld, function(cmd) {
         let moved = false;
-        
+
         if (cmd == cli.InGameCommand.exit) {
             return {
                 cont: false,
@@ -251,7 +251,7 @@ function runMaze(currMaze: Maze) {
                 moved = true;
             }
         }
-        
+
         // Don't continue if the player won or is dead
         if (currWorld.isFinished()) {
             return {
@@ -259,16 +259,16 @@ function runMaze(currMaze: Maze) {
                 print: true
             };
         }
-        
+
         return {
             cont: true,
             didMove: moved
         };
-    }, function () {
+    }, function() {
         // Process enemies and tile ticks
         currWorld.enemyMove();
         currWorld.tick();
-        
+
         // Don't continue if the player won or is dead
         if (currWorld.isFinished()) {
             return {
@@ -276,12 +276,12 @@ function runMaze(currMaze: Maze) {
                 print: true
             };
         }
-        
+
         return {
             cont: true
         };
     });
-    
+
     cont.survived = currWorld.survived();
 
     return cont;
@@ -294,14 +294,14 @@ function printResult(res, cont) {
         println(chalk.gray("-".repeat(size)));
         println();
     }
-    
+
     // Only print if the level was started and the user didn't exit the level
     if (res.start && !cont.exited) {
         if (!cont.survived) {
             printSep(14);
             println(chalk.red.italic("YOU'RE DEAD..."));
             printSep(14);
-        // If the player didn't die, he won
+            // If the player didn't die, he won
         } else {
             printSep(8);
             println(chalk.green.bold("YOU WON!"));
@@ -339,7 +339,7 @@ type LevelPrintDef = {
 while (res.start) {
     // First check what the user wants
     res = runMenu();
-    
+
     let cont: { restart: boolean, survived?: boolean, exited?: boolean, won?: boolean } = {
         restart: res.start,
         won: res.start
@@ -353,10 +353,10 @@ while (res.start) {
             level += 1;
             cont = freeplay(cont, level);
         }
-    // If he selected a level, we load that level and run it
+        // If he selected a level, we load that level and run it
     } else {
         let currMaze = maze.mazes[storage.get().mazeId];
-        
+
         while (cont.restart) {
             cont = runMaze(currMaze);
         }

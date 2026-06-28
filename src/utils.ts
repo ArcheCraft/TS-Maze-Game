@@ -1,7 +1,7 @@
 import path from "path";
 import ansiEscapes from "ansi-escapes";
 import * as fs from "fs";
-import {globbySync} from "globby";
+import { globbySync } from "globby";
 
 // Get all .json files in a given folder
 export function dataFolder(folder: string) {
@@ -12,7 +12,7 @@ export function dataFolder(folder: string) {
 export function readDataFolder(folder: string, read: (id: string, data: any) => void) {
     const entries = dataFolder(folder);
     for (let file of entries) {
-        const data = fs.readFileSync(file, {encoding: "utf8"});
+        const data = fs.readFileSync(file, { encoding: "utf8" });
         const id = new RegExp(`${folder}/(.*)\\.json`).exec(file)![1]
         read(id, data);
     }
@@ -32,7 +32,7 @@ export function println(value: any = "") {
 
 // Creates an array of a given size and initalized using the given function
 export function List<T>(size: number, initializer: (index: number) => T) {
-    return Array.apply<null, any, any[]>(null, {length: size}).map((_, index) => initializer(index));
+    return Array.apply<null, any, any[]>(null, { length: size }).map((_, index) => initializer(index));
 }
 
 // Randomize the Math.random function
@@ -188,7 +188,7 @@ export const storage: { ensureFolder(): void; path: string; folder: string; data
             storage.save()
             return storage.data;
         }
-        const data = fs.readFileSync(storage.path, {encoding: "utf8"});
+        const data = fs.readFileSync(storage.path, { encoding: "utf8" });
         storage.data = new Storage(JSON.parse(data));
         return storage.data;
     },
@@ -199,6 +199,6 @@ export const storage: { ensureFolder(): void; path: string; folder: string; data
     // Saves the storage
     save() {
         storage.ensureFolder()
-        fs.writeFileSync(storage.path, JSON.stringify(storage.data), {encoding: "utf8"});
+        fs.writeFileSync(storage.path, JSON.stringify(storage.data), { encoding: "utf8" });
     }
 }

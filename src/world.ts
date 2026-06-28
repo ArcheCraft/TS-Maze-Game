@@ -1,43 +1,44 @@
-import * as enemies from "./enemies.js";
-import * as mazes from "./maze.js";
-import * as loot from "./loot.js";
-import * as raytracing from "./raytracing.js";
-import {List, Position} from "./utils.js";
-import {Maze, Tile} from "./maze.js";
-import {EnemyInstance} from "./enemies.js";
-import {createVisionMap} from "./raytracing.js";
+import * as enemies from "./enemies.ts";
+import * as mazes from "./maze.ts";
+import * as loot from "./loot.ts";
+import * as raytracing from "./raytracing.ts";
+import { List, Position } from "./utils.ts";
+import { Maze, Tile } from "./maze.ts";
+import { type EnemyInstance } from "./enemies.ts";
+import { createVisionMap } from "./raytracing.ts";
 
-export enum Direction {
-    west,
-    south,
-    east,
-    north,
-}
+const DirectionValues = [0, 1, 2, 3] as const;
+export const Direction = {
+    west: 0,
+    south: 1,
+    east: 2,
+    north: 3,
 
-export namespace Direction {
-    export function toString(dir: Direction): string {
+    toString(dir: Direction): string {
+        return Object.keys(Direction).find(key => Direction[key] === dir) || "";
+    },
+
+    fromString(dir: string): Direction {
         return Direction[dir];
-    }
+    },
 
-    export function fromString(dir: string): Direction {
-        return (Direction as any)[dir];
-    }
+    values: DirectionValues as unknown as Direction[]
+} as const;
+export type Direction = typeof DirectionValues[number];
 
-    export const values: Direction[] = [Direction.west, Direction.south, Direction.east, Direction.north];
-}
-
-export enum EntityType {
-    player,
-    enemy,
-    item,
-}
+export const EntityType = {
+    player: 0,
+    enemy: 1,
+    item: 2
+} as const;
+export type EntityType = typeof EntityType[keyof typeof EntityType];
 
 // An instance of a maze
 export class World {
     maze: mazes.Maze;
     data: WorldData;
     tiles: Tile[][];
-    entities: { [x: number]: { [y: number]: { type: number, props: any } | null } };
+    entities: { [x: number]: { [y: number]: { type: EntityType, props: any } | null } };
     player: Position;
     visited: { [x: number]: { [y: number]: boolean } };
 
@@ -51,8 +52,8 @@ export class World {
         this.data = new WorldData(this);
         let world = this;
         // Construct the tiles from the TileData
-        this.tiles = List(maze.size[0], function (x) {
-            return List(maze.size[1], function (y) {
+        this.tiles = List(maze.size[0], function(x) {
+            return List(maze.size[1], function(y) {
                 let tile = maze.get(x, y);
                 return new Tile([x, y], world, tile)
             });
@@ -60,7 +61,7 @@ export class World {
         this.entities = {};
         this.visited = {};
         this.playerVisibilityMap = null;
-        let {x, y} = maze.start;
+        let { x, y } = maze.start;
         this.player = new Position(x, y);
         // Add the player
         this.set(x, y, {
@@ -134,7 +135,7 @@ export class World {
 
     // Mark all tiles in the visibility range of the player as visited
     visit() {
-        let {x, y} = this.player;
+        let { x, y } = this.player;
         let range = this.get(this.player.x, this.player.y)!.props.sight + 2;
 
         for (let i = x - range; i <= x + range; i++) {
@@ -243,7 +244,7 @@ export class World {
                 // Check whether it can hit the player
                 if (Math.abs(x - px) < range + 1 && Math.abs(y - py) < range + 1) {
                     player.props.health -= enemy.props.damage;
-                // Otherwise try to move it
+                    // Otherwise try to move it
                 } else if (Math.abs(y - py) < range + 1) {
                     newy = y;
                     newx = x + Math.sign(px - x);
@@ -284,7 +285,7 @@ export class World {
 
     // Makes the player go in the given direcction
     walk(dir: Direction) {
-        let {x, y} = this.player;
+        let { x, y } = this.player;
         let player = this.get(x, y)!;
 
         // Moves the player to the given tile and returns whether it was a legal move
@@ -316,14 +317,14 @@ export class World {
                     } else {
                         player.props.health += target.props.health;
                     }
-                    
+
                     player.props.damage += target.props.damage || 0;
                     player.props.sight += target.props.sight || 0;
                 }
 
                 this.rounds += 1;
                 return true;
-            // If the entity is not an item
+                // If the entity is not an item
             } else if (target !== null) {
                 // It's an enemy and we attack it
                 target.props.health -= player.props.damage;
@@ -335,7 +336,7 @@ export class World {
 
                 this.rounds += 1;
                 return true;
-            // Everything else shouldn't happen
+                // Everything else shouldn't happen
             } else {
                 return false;
             }

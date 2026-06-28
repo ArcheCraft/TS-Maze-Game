@@ -1,4 +1,4 @@
-import { readDataFolder } from "./utils.js";
+import { readDataFolder } from "./utils.ts";
 
 type LootItem = {
     health?: number,

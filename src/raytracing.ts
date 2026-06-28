@@ -1,5 +1,5 @@
-import {List, Position} from "./utils.js";
-import {World} from "./world.js";
+import { List, Position } from "./utils.ts";
+import { World } from "./world.ts";
 
 // Scans 90° of view from the given storage
 function scanArc(storage: Storage, world: World, distance: number, min: number, max: number, rotate: (x: number, y: number) => [number, number]) {

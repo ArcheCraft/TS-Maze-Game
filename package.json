@@ -8,27 +8,25 @@
     "Andrej",
     "Lukas"
   ],
-  "homepage": "https://baldu.at/maze/",
-  "repository": "https://github.com/Luk1819/Informatik-Projekt",
-  "bugs": "https://github.com/Luk1819/Informatik-Projekt/issues",
+  "repository": "https://github.com/ArcheCraft/TS-Maze-Game",
+  "bugs": "https://github.com/ArcheCraft/TS-Maze-Game/issues",
   "engines": {
-    "node": ">=16.0.0"
+    "node": ">=24.0.0"
   },
   "dependencies": {
-    "ansi-escapes": "^5.0.0",
-    "chalk": "^5.0.1",
-    "chalk-template": "^0.4.0",
-    "globby": "^13.1.1",
+    "ansi-escapes": "^7.3.0",
+    "chalk": "^5.6.2",
+    "chalk-template": "^1.1.2",
+    "globby": "^16.2.0",
     "readline-sync": "^1.4.10",
-    "ts-node": "^10.7.0",
-    "typescript": "^4.6.2"
+    "typescript": "^6.0.3"
   },
   "type": "module",
   "scripts": {
-    "start": "node --loader ts-node/esm ."
+    "start": "node ."
   },
   "devDependencies": {
-    "@types/node": "^17.0.21",
+    "@types/node": "^26.0.1",
     "@types/readline-sync": "^1.4.4"
   }
 }

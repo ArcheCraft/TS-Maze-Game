@@ -1,6 +1,6 @@
-import { Direction } from "./world.js";
-import {readDataFolder, arrayEquals, println} from "./utils.js";
-import {readTiles, TileData, TileDefinition} from "./maze.js";
+import { Direction } from "./world.ts";
+import { readDataFolder, arrayEquals, println } from "./utils.ts";
+import { readTiles, TileData, type TileDefinition } from "./maze.ts";
 
 // A module used by the generator
 export class Module {
@@ -10,7 +10,7 @@ export class Module {
     goalPos: [number, number];
 
     constructor(directions: (Direction | string)[], maze: (number | string)[][], enemies: { pos: [number, number], type: number }[], tiles: TileDefinition<any> = {}, goalPos: [number, number]) {
-        this.directions = directions.map(function (dir: Direction | string) {
+        this.directions = directions.map(function(dir: Direction | string) {
             if (typeof dir == "string") {
                 return Direction.fromString(dir);
             } else {
@@ -26,7 +26,7 @@ export class Module {
 
 // Returns all modules that have the given directions
 export function filterModules(modules: Module[], directions: Direction[]) {
-    return modules.filter(function (module: Module) {
+    return modules.filter(function(module: Module) {
         return arrayEquals(directions, module.directions);
     });
 }
@@ -72,7 +72,7 @@ export function check() {
 
 
 // The size of one module
-export const size: [number, number] = [ 7, 7 ]
+export const size: [number, number] = [7, 7]
 
 
 // The registered modules

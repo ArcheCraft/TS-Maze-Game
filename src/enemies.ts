@@ -1,4 +1,4 @@
-import {readDataFolder} from "./utils.js";
+import { readDataFolder } from "./utils.ts";
 
 export type EnemyInstance = {
     type: number,
@@ -35,7 +35,7 @@ export class Enemy {
 
     // Creates a modifiable instance of this enemy type
     createInstance() {
-        return <EnemyInstance>{
+        return {
             type: this.type,
             health: this.health,
             damage: this.damage,
@@ -44,7 +44,7 @@ export class Enemy {
             loot: this.loot,
             sight: this.sight,
             range: this.range,
-        };
+        } as EnemyInstance;
     }
 }
 

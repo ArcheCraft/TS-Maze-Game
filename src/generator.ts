@@ -1,9 +1,8 @@
-import * as mazes from "./maze.js";
-import * as modules from "./module.js";
-import {Maze} from "./maze.js";
-import { Direction } from "./world.js";
-import { Module } from "./module.js";
-import {Position, println, randomElement} from "./utils.js";
+import * as mazes from "./maze.ts";
+import * as modules from "./module.ts";
+import { Maze } from "./maze.ts";
+import { Direction } from "./world.ts";
+import { Position, println, randomElement } from "./utils.ts";
 
 type Cell = {
     x: number,
@@ -22,35 +21,35 @@ function generateNodes(width: number, height: number) {
 
     let nodes = Array<Cell>(width * height);
     for (let y = 0; y < height; y++) {
-		for (let x = 0; x < width; x++) {
-			let cell = { x, y };
-			nodes[locate(cell)] = cell;
-		}
-	}
+        for (let x = 0; x < width; x++) {
+            let cell = { x, y };
+            nodes[locate(cell)] = cell;
+        }
+    }
 
-	let node = randomElement(nodes);
-	let stack = [node];
-	let maze = new Map<Cell, Array<Cell>>();
+    let node = randomElement(nodes);
+    let stack = [node];
+    let maze = new Map<Cell, Array<Cell>>();
 
-	for (let node of nodes) {
-		maze.set(node, []);
-	}
+    for (let node of nodes) {
+        maze.set(node, []);
+    }
 
-	while (node) {
-		let neighbors = nodes.filter(other => !maze.get(other)!.length && adjacent(node, other));
-		if (neighbors.length) {
-			let neighbor = randomElement(neighbors);
-			maze.get(node)!.push(neighbor);
-			maze.get(neighbor)!.push(node);
-			stack.unshift(neighbor);
-			node = neighbor;
-		} else {
-			stack.shift();
-			node = stack[0];
-		}
-	}
+    while (node) {
+        let neighbors = nodes.filter(other => !maze.get(other)!.length && adjacent(node, other));
+        if (neighbors.length) {
+            let neighbor = randomElement(neighbors);
+            maze.get(node)!.push(neighbor);
+            maze.get(neighbor)!.push(node);
+            stack.unshift(neighbor);
+            node = neighbor;
+        } else {
+            stack.shift();
+            node = stack[0];
+        }
+    }
 
-	return maze;
+    return maze;
 }
 
 // Generates a maze of the given size in modules and returns it
@@ -60,7 +59,7 @@ export function createMaze(width: number, height: number) {
 
     for (let [node, neighbors] of nodes) {
         let directions: Direction[] = [];
-		for (let neighbor of neighbors) {
+        for (let neighbor of neighbors) {
             if (neighbor.x == node.x + 1) {
                 directions.push(Direction.south);
             }
@@ -73,9 +72,9 @@ export function createMaze(width: number, height: number) {
             if (neighbor.y == node.y + 1) {
                 directions.push(Direction.east);
             }
-		}
-		createModule(maze, node, directions, node.x == 0 && node.y == 0, node.x == height - 1 && node.y == width - 1);
-	}
+        }
+        createModule(maze, node, directions, node.x == 0 && node.y == 0, node.x == height - 1 && node.y == width - 1);
+    }
 
     return maze;
 }
